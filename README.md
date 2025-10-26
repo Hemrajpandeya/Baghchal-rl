@@ -1,34 +1,37 @@
-# BaghChal RL (start with 5×5)
+# 🐅 BaghChal-RL (5×5 now → 7×7 later)
 
-Teach a computer to play **BaghChal** using **Reinforcement Learning**.
-
-- **Now:** 5×5 board (simpler to start)
-- **Later:** 7×7 + multi-jump using the same codebase
-- RL algorithm: **MaskablePPO** (from `sb3-contrib`) so the agent avoids illegal moves
+Train an RL agent to play **BaghChal** (Tiger & Goat).  
+Uses **Gymnasium** + **Stable-Baselines3 (MaskablePPO)**.
 
 ---
 
-## 1) Requirements
+## Quick Start — GPU (Conda)
 
-- Python 3.9+ (3.10/3.11 recommended)
-- Git (optional but recommended)
+```bash
+# 1) create & activate env
+conda create -n baghchal-rl-gpu python=3.11 -y
+conda activate baghchal-rl-gpu
 
-> If you’re on Windows, install [Python](https://www.python.org/downloads/) and check “Add Python to PATH”.
+# 2) install GPU PyTorch (bundled CUDA)
+conda install -y -c pytorch -c nvidia pytorch pytorch-cuda=12.1
+# (fallback if needed) conda install -y -c pytorch -c nvidia pytorch pytorch-cuda=11.8
 
----
+# 3) other deps
+conda install -y -c conda-forge gymnasium numpy tensorboard
+pip install -U stable-baselines3 sb3-contrib
 
-## 2) Setup (one-time)
-
-### Windows (PowerShell)
-```powershell
-git clone https://github.com/Hemrajpandeya/Baghchal-rl
+# 4) clone & install this project
+git clone https://github.com/Hemrajpandeya/Baghchal-rl.git
 cd Baghchal-rl
-
-python -m venv .venv
-.venv\Scripts\activate
-
-python -m pip install -U pip
-pip install gymnasium stable-baselines3 "sb3-contrib" numpy tensorboard
-
-# make local package importable as `from baghchal...`
 pip install -e .
+
+# 5) sanity check
+python quickcheck.py
+# Expect:
+# Obs shape: (5, 5, 7)
+# Num actions: 217
+# Valid actions at start: 21
+
+# 6) train (uses GPU)
+# ensure scripts/train_baghchal_simple.py contains: device="cuda"
+python scripts/train_baghchal_simple.py
