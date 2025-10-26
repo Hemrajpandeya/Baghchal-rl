@@ -35,3 +35,28 @@ python quickcheck.py
 # 6) train (uses GPU)
 # ensure scripts/train_baghchal_simple.py contains: device="cuda"
 python scripts/train_baghchal_simple.py
+
+#HPC (Slurm) example
+# request a GPU then enter the allocated node
+salloc -A mai103 -p gpu-shared -N 1 -n 1 --gpus=1 --time=02:00:00 --mem=8G
+srun --jobid=<JOBID> --pty bash
+nvidia-smi                      # should show a GPU
+conda activate baghchal-rl-gpu
+cd Baghchal-rl
+python scripts/train_baghchal_simple.py
+
+
+#save/load  (example)
+# after training
+model.save("models/ppo_baghchal_gpu")
+
+# later
+from sb3_contrib import MaskablePPO
+model = MaskablePPO.load("models/ppo_baghchal_gpu")
+
+#TensorBoard (optional)
+tensorboard --logdir logs
+# open the URL shown to view learning curves
+
+
+
