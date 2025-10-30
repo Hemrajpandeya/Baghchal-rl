@@ -7,6 +7,12 @@ name = "baghchal"
 version = "0.0.1"
 description = "Minimal BaghChal environment with action masking for PPO"
 requires-python = ">=3.10"
+dependencies = [
+  "gymnasium",
+  "stable-baselines3",
+  "sb3-contrib",
+  "numpy",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

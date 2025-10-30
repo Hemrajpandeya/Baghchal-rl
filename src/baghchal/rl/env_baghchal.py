@@ -75,9 +75,10 @@ NUM_ACTIONS = NUM_PLACE + NUM_STEPS + NUM_CAP
 class BhagChalEnv(gym.Env):
     metadata = {"render_modes": []}
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: Optional[int] = None, reward_perspective: int = TIGER):
         super().__init__()
         self.rng = np.random.default_rng(seed)
+        self.reward_perspective = reward_perspective  # TIGER or GOAT
         # planes: [tiger, goat, empty, current_player, goats_left/20, goats_captured/5, phase_is_move]
         self.observation_space = spaces.Box(low=0, high=1, shape=(N, N, 7), dtype=np.float32)
         self.action_space = spaces.Discrete(NUM_ACTIONS)
@@ -86,7 +87,6 @@ class BhagChalEnv(gym.Env):
         self.goats_to_place = TOTAL_GOATS
         self.goats_captured = 0
         self.steps = 0
-        self._last_info: Dict = {}
 
     # --- helpers ---
     def seed(self, seed: Optional[int] = None): self.rng = np.random.default_rng(seed)
@@ -101,7 +101,6 @@ class BhagChalEnv(gym.Env):
         self.goats_to_place = TOTAL_GOATS
         self.goats_captured = 0
         self.steps = 0
-        self._last_info = {}
         return self._obs(), {"goats_to_place": self.goats_to_place}
 
     def _obs(self) -> np.ndarray:
@@ -117,6 +116,7 @@ class BhagChalEnv(gym.Env):
     def _cells_of(self, piece: int) -> List[int]:
         locs = np.where(self.board == piece)
         return [iof(int(r), int(c)) for r,c in zip(locs[0], locs[1])]
+
     def _empty(self, i: int) -> bool:
         r,c = rc(i); return self.board[r,c] == 0
 
@@ -170,8 +170,9 @@ class BhagChalEnv(gym.Env):
 
     def step(self, action: int):
         self.steps += 1
-        done = False
         reward = 0.0
+        terminated = False
+        truncated = False
         info: Dict = {}
 
         mask = self.valid_action_mask()
@@ -205,27 +206,32 @@ class BhagChalEnv(gym.Env):
                 else:
                     reward = -0.1
 
+        # --- termination / reward from fixed perspective ---
         winner: Optional[int] = None
         reason: Optional[str] = None
+
         if self.goats_captured >= TIGERS_TO_WIN_CAPTURE:
             winner, reason = TIGER, "capture"
-        else:
-            t_moves = self._tiger_legal_count()
-            if GOATS_TO_WIN_BLOCK and t_moves == 0:
-                winner, reason = GOAT, "block"
-        if self.steps >= MAX_STEPS and winner is None:
-            winner, reason = None, "draw"
+        elif GOATS_TO_WIN_BLOCK and self._tiger_legal_count() == 0:
+            winner, reason = GOAT, "block"
+        elif self.steps >= MAX_STEPS:
+            truncated = True
+            reason = "draw"
 
         if winner is not None:
-            done = True
-            if winner == self.current_player: reward = 1.0
-            elif winner is None: reward = 0.0
-            else: reward = -1.0
-            info.update({"winner": winner, "reason": reason})
+            terminated = True
+            reward = 1.0 if winner == self.reward_perspective else -1.0
+        elif truncated:
+            reward = 0.0
 
+        info.update({"winner": winner, "reason": reason})
+
+        # advance turn (harmless even on terminal states)
         self.current_player = GOAT if self.current_player == TIGER else TIGER
         obs = self._obs()
-        return obs, reward, done, False, info
+        return obs, reward, terminated, truncated, info
+
+
 def mask_fn(env):
     # ActionMasker calls this in each step; must return a 1D boolean mask
     return env.valid_action_mask()
