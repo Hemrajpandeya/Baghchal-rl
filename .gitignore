@@ -1,10 +1,13 @@
-﻿runs/
+﻿# logs & TB
+logs/
+logs/**
+
+# models & artifacts
 models/
-__pycache__/
-*.pyc
+*.zip
+*.gif
+*.mp4
+
+# notebooks checkpoints (if any)
 .ipynb_checkpoints/
-.DS_Store
-.env
-.venv/
-*.egg-info/
-pyproject.toml.bak
+<the lines above>
