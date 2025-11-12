@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: baghchal-5x5
+Version: 0.0.2
+Summary: Minimal BaghChal 5x5 environment with action masking for PPO
+Requires-Python: >=3.10
+Requires-Dist: gymnasium
+Requires-Dist: stable-baselines3
+Requires-Dist: sb3-contrib
+Requires-Dist: numpy
