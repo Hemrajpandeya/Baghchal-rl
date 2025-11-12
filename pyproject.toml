@@ -3,9 +3,9 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "baghchal"
-version = "0.0.1"
-description = "Minimal BaghChal environment with action masking for PPO"
+name = "baghchal-5x5"
+version = "0.0.2"
+description = "Minimal BaghChal 5x5 environment with action masking for PPO"
 requires-python = ">=3.10"
 dependencies = [
   "gymnasium",
